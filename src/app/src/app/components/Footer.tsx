@@ -1,4 +1,5 @@
 import { Brain, Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
+import logoImg from "../../imports/MHBHC-stacked_copy.jpg";
 
 export function Footer() {
   const quickLinks = [
@@ -49,8 +50,12 @@ export function Footer() {
           {/* About Column */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#25a794] to-[#1d9e8c] rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <img
+                src={logoImg}
+                alt="Mile High Behavioral Health Care logo"
+                className="h-12 w-auto object-contain"
+                />
               </div>
               <div>
                 <div
