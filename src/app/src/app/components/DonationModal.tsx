@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Heart, CheckCircle, ExternalLink, Brain, MapPin, Users } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import logoImg from "../../imports/MHBHC-stacked_copy.jpg";
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -72,7 +73,11 @@ export function DonationModal({ isOpen, onClose }: DonationModalProps) {
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-r from-[#25a794] to-[#1d9e8c] rounded-xl flex items-center justify-center flex-shrink-0">
-                <Brain className="w-7 h-7 text-white" />
+                <img
+                  src={logoImg}
+                  alt="Mile High Behavioral Health Care logo"
+                  className="h-12 w-auto object-contain"
+                />
               </div>
               <div>
                 <div
