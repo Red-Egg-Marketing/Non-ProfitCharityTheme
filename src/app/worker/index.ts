@@ -324,7 +324,7 @@ function staffHtml(
     if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
   });
 
-  setInterval(poll,3000);
+  setInterval(poll,500);
   poll();
 </script>
 </body>
