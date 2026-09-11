@@ -72,7 +72,7 @@ export function DonationModal({ isOpen, onClose }: DonationModalProps) {
 
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#25a794] to-[#1d9e8c] rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
                 <img
                   src={logoImg}
                   alt="Mile High Behavioral Health Care logo"
