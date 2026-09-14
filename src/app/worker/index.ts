@@ -1,17 +1,9 @@
-const SYSTEM_PROMPT = `You are a helpful, compassionate assistant for Mile High Behavioral Health Care (MHBHC), a nonprofit based in Denver, Colorado, serving people since 1984.
+import systemPrompt from "./prompts/system.md";
+import knowledge from "./prompts/knowledge.md";
 
-You help people learn about MHBHC's services, programs, and how to get support. Be warm, empathetic, and non-judgmental — the people reaching out may be in vulnerable moments.
+const SYSTEM_PROMPT = `${systemPrompt.trim()}
 
-Key facts about MHBHC:
-- Mission: To provide a caring, seamless continuum of behavioral healthcare to those in need.
-- Locations: Denver (Globeville), Sheridan, Aurora, and Summit County, Colorado.
-- Programs: mental health treatment, substance use services, LGBTQ2S+ affirming care (Transgender Center of the Rockies, Denver Element, PRIDEvolution), housing and crisis stabilization (Comitis Crisis Center), integrated healthcare, and more.
-- Serves 250,000+ individuals with 11+ active programs.
-- Contact: info@mhbhc.org | (303) 863-8300
-- Donations: https://www.coloradogives.org/donate/MHBHC
-
-If someone is in immediate crisis, always direct them to call 988 (Suicide & Crisis Lifeline) or 911.
-Keep answers concise (2–4 sentences). If you cannot answer something with certainty, offer to connect the person with an MHBHC staff member.`;
+${knowledge.trim()}`;
 
 const CORS: HeadersInit = {
   "Access-Control-Allow-Origin": "*",
@@ -51,35 +43,47 @@ export default {
 
     // POST /chat — stream Anthropic response
     if (pathname === "/chat" && request.method === "POST") {
-      const { messages } = await request.json<{ messages: { role: string; content: string }[] }>();
+      const { messages } = await request.json<{
+        messages: { role: string; content: string }[];
+      }>();
 
-      const upstream = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
+      const upstream = await fetch(
+        "https://api.anthropic.com/v1/messages",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-5",
+            max_tokens: 512,
+            system: SYSTEM_PROMPT,
+            messages,
+            stream: true,
+          }),
         },
-        body: JSON.stringify({
-          model: "claude-opus-5",
-          max_tokens: 512,
-          system: SYSTEM_PROMPT,
-          messages,
-          stream: true,
-        }),
-      });
+      );
 
       if (!upstream.ok) {
         const err = await upstream.text();
         console.error("Anthropic error:", upstream.status, err);
         return new Response(JSON.stringify({ error: err }), {
           status: upstream.status,
-          headers: { ...CORS, "Content-Type": "application/json" },
+          headers: {
+            ...CORS,
+            "Content-Type": "application/json",
+          },
         });
       }
 
       return new Response(upstream.body, {
-        headers: { ...CORS, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
+        headers: {
+          ...CORS,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+        },
       });
     }
 
@@ -91,8 +95,10 @@ export default {
         phone?: string;
       }>();
 
-      const visitorName = (name ?? "").trim().slice(0, 100) || "Not provided";
-      const visitorPhone = (phone ?? "").trim().slice(0, 40) || "Not provided";
+      const visitorName =
+        (name ?? "").trim().slice(0, 100) || "Not provided";
+      const visitorPhone =
+        (phone ?? "").trim().slice(0, 40) || "Not provided";
       const sessionId = crypto.randomUUID();
 
       const session: Session = {
@@ -102,18 +108,30 @@ export default {
         visitorPhone,
         messages: [],
       };
-      await env.SESSIONS.put(`session:${sessionId}`, JSON.stringify(session), {
-        expirationTtl: 86400,
-      });
+      await env.SESSIONS.put(
+        `session:${sessionId}`,
+        JSON.stringify(session),
+        {
+          expirationTtl: 86400,
+        },
+      );
 
       const staffUrl = `${url.origin}/staff?session=${sessionId}`;
 
       if (!env.SLACK_WEBHOOK_URL) {
         console.error("SLACK_WEBHOOK_URL is not configured");
-        return new Response(JSON.stringify({ error: "Slack notifications are not configured" }), {
-          status: 503,
-          headers: { ...CORS, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Slack notifications are not configured",
+          }),
+          {
+            status: 503,
+            headers: {
+              ...CORS,
+              "Content-Type": "application/json",
+            },
+          },
+        );
       }
 
       const slackResponse = await fetch(env.SLACK_WEBHOOK_URL, {
@@ -126,43 +144,90 @@ export default {
 
       if (!slackResponse.ok) {
         const error = await slackResponse.text();
-        console.error("Slack webhook error:", slackResponse.status, error);
-        return new Response(JSON.stringify({ error: "Slack notification failed" }), {
-          status: 502,
-          headers: { ...CORS, "Content-Type": "application/json" },
-        });
+        console.error(
+          "Slack webhook error:",
+          slackResponse.status,
+          error,
+        );
+        return new Response(
+          JSON.stringify({
+            error: "Slack notification failed",
+          }),
+          {
+            status: 502,
+            headers: {
+              ...CORS,
+              "Content-Type": "application/json",
+            },
+          },
+        );
       }
 
-      return new Response(JSON.stringify({ ok: true, sessionId }), {
-        headers: { ...CORS, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ ok: true, sessionId }),
+        {
+          headers: {
+            ...CORS,
+            "Content-Type": "application/json",
+          },
+        },
+      );
     }
 
     // GET /poll?session=xxx&since=timestamp — fetch new messages
     if (pathname === "/poll" && request.method === "GET") {
       const sessionId = url.searchParams.get("session");
-      const since = parseInt(url.searchParams.get("since") ?? "0");
-      if (!sessionId) return new Response("Missing session", { status: 400, headers: CORS });
+      const since = parseInt(
+        url.searchParams.get("since") ?? "0",
+      );
+      if (!sessionId)
+        return new Response("Missing session", {
+          status: 400,
+          headers: CORS,
+        });
 
-      const session = await env.SESSIONS.get<Session>(`session:${sessionId}`, "json");
-      if (!session) return new Response("Session not found", { status: 404, headers: CORS });
+      const session = await env.SESSIONS.get<Session>(
+        `session:${sessionId}`,
+        "json",
+      );
+      if (!session)
+        return new Response("Session not found", {
+          status: 404,
+          headers: CORS,
+        });
 
-      const messages = session.messages.filter(m => m.timestamp > since);
+      const messages = session.messages.filter(
+        (m) => m.timestamp > since,
+      );
       return new Response(JSON.stringify({ messages }), {
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: {
+          ...CORS,
+          "Content-Type": "application/json",
+        },
       });
     }
 
     // POST /message — post a visitor or staff message
     if (pathname === "/message" && request.method === "POST") {
-      const { session: sessionId, role, content } = await request.json<{
+      const {
+        session: sessionId,
+        role,
+        content,
+      } = await request.json<{
         session: string;
         role: "visitor" | "staff";
         content: string;
       }>();
 
-      const session = await env.SESSIONS.get<Session>(`session:${sessionId}`, "json");
-      if (!session) return new Response("Session not found", { status: 404, headers: CORS });
+      const session = await env.SESSIONS.get<Session>(
+        `session:${sessionId}`,
+        "json",
+      );
+      if (!session)
+        return new Response("Session not found", {
+          status: 404,
+          headers: CORS,
+        });
 
       const msg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -171,36 +236,68 @@ export default {
         timestamp: Date.now(),
       };
       session.messages = [...session.messages, msg];
-      await env.SESSIONS.put(`session:${sessionId}`, JSON.stringify(session), {
-        expirationTtl: 86400,
-      });
+      await env.SESSIONS.put(
+        `session:${sessionId}`,
+        JSON.stringify(session),
+        {
+          expirationTtl: 86400,
+        },
+      );
 
       return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...CORS, "Content-Type": "application/json" },
+        headers: {
+          ...CORS,
+          "Content-Type": "application/json",
+        },
       });
     }
 
     // GET /staff?session=xxx — serve staff chat UI
     if (pathname === "/staff" && request.method === "GET") {
       const sessionId = url.searchParams.get("session");
-      if (!sessionId) return new Response("Missing session", { status: 400 });
+      if (!sessionId)
+        return new Response("Missing session", { status: 400 });
 
-      const session = await env.SESSIONS.get<Session>(`session:${sessionId}`, "json");
-      const transcript = session?.initialTranscript ?? "No transcript available.";
-      const visitorName = session?.visitorName ?? "Not provided";
-      const visitorPhone = session?.visitorPhone ?? "Not provided";
+      const session = await env.SESSIONS.get<Session>(
+        `session:${sessionId}`,
+        "json",
+      );
+      const transcript =
+        session?.initialTranscript ??
+        "No transcript available.";
+      const visitorName =
+        session?.visitorName ?? "Not provided";
+      const visitorPhone =
+        session?.visitorPhone ?? "Not provided";
 
-      return new Response(staffHtml(sessionId, url.origin, transcript, visitorName, visitorPhone), {
-        headers: { "Content-Type": "text/html;charset=UTF-8" },
-      });
+      return new Response(
+        staffHtml(
+          sessionId,
+          url.origin,
+          transcript,
+          visitorName,
+          visitorPhone,
+        ),
+        {
+          headers: {
+            "Content-Type": "text/html;charset=UTF-8",
+          },
+        },
+      );
     }
 
-    return new Response("Not found", { status: 404, headers: CORS });
+    return new Response("Not found", {
+      status: 404,
+      headers: CORS,
+    });
   },
 };
 
 function esc(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function staffHtml(

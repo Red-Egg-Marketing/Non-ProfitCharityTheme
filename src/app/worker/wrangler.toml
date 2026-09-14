@@ -9,3 +9,9 @@ id = "d67dc294ce4b4c349adacd8d59bfd8c8"
 # Secrets (set via CLI — never put real values here):
 #   npx wrangler secret put ANTHROPIC_API_KEY
 #   npx wrangler secret put SLACK_WEBHOOK_URL
+
+# Import .md files as plain strings (used for the system prompt + knowledge base)
+[[rules]]
+type = "Text"
+globs = ["**/*.md"]
+fallthrough = true
