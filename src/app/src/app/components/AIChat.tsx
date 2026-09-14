@@ -10,6 +10,7 @@ import {
   ChevronDown,
   UserCheck,
 } from "lucide-react";
+import { MessageContent } from "./MessageContent";
 
 interface Message {
   role: "user" | "assistant" | "staff";
@@ -435,7 +436,9 @@ export function AIChat() {
                       fontFamily: "'Inter', sans-serif",
                     }}
                   >
-                    {msg.content || (
+                    {msg.content ? (
+                      <MessageContent text={msg.content} />
+                    ) : (
                       <span className="flex gap-1 items-center py-0.5">
                         <span
                           className="w-1.5 h-1.5 bg-[#25a794] rounded-full animate-bounce"
