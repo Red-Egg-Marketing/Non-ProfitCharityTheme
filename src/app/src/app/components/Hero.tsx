@@ -16,7 +16,7 @@ export function Hero({ onDonateClick }: HeroProps) {
           <div className="space-y-6 lg:space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
               <Heart className="w-4 h-4 text-[#25a794] fill-[#25a794]" />
-              <span className="text-[#457B9D] text-sm font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Serving Colorado Since 1984</span>
+              <span className="text-[#457B9D] text-sm font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Serving Colorado Since 1960</span>
             </div>
 
             <h1
