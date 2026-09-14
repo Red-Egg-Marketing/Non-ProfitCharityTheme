@@ -22,25 +22,40 @@ const SESSION_KEY = "mhbhc_session_id";
 
 export function AIChat() {
   const [isOpen, setIsOpen] = useState(false);
-  // Mobile: size the panel to the *visual* viewport so the iOS keyboard shrinks
-  // the panel instead of pushing it offscreen, and lock the page behind it.
-  const [mobileHeight, setMobileHeight] = useState<number | null>(null);
+  // Mobile: track the *visual* viewport (height + offset) so the iOS keyboard
+  // shrinks the panel in place instead of pushing/scrolling it offscreen, and
+  // lock the page behind it so Safari can't scroll the layout viewport.
+  const [mobileVV, setMobileVV] = useState<{ height: number; top: number } | null>(null);
   useEffect(() => {
     if (!isOpen) return;
-    const mq = window.matchMedia("(max-width: 767px)");
-    if (!mq.matches) return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
     const vv = window.visualViewport;
-    const update = () => setMobileHeight(vv ? vv.height : window.innerHeight);
+    const update = () =>
+      setMobileVV({
+        height: vv ? vv.height : window.innerHeight,
+        top: vv ? vv.offsetTop : 0,
+      });
     update();
     vv?.addEventListener("resize", update);
     vv?.addEventListener("scroll", update);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+
+    const scrollY = window.scrollY;
+    const body = document.body.style;
+    const prev = { position: body.position, top: body.top, width: body.width, overflow: body.overflow };
+    body.position = "fixed";
+    body.top = `-${scrollY}px`;
+    body.width = "100%";
+    body.overflow = "hidden";
+
     return () => {
       vv?.removeEventListener("resize", update);
       vv?.removeEventListener("scroll", update);
-      document.body.style.overflow = prevOverflow;
-      setMobileHeight(null);
+      body.position = prev.position;
+      body.top = prev.top;
+      body.width = prev.width;
+      body.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
+      setMobileVV(null);
     };
   }, [isOpen]);
   const [messages, setMessages] = useState<Message[]>([
@@ -363,7 +378,7 @@ export function AIChat() {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex flex-col bg-white overflow-hidden md:inset-auto md:bottom-24 md:right-6 md:w-[360px] md:h-auto md:max-h-[540px] md:rounded-2xl md:shadow-2xl md:border md:border-gray-100"
-          style={mobileHeight ? { height: mobileHeight } : undefined}
+          style={mobileVV ? { height: mobileVV.height, transform: `translateY(${mobileVV.top}px)` } : undefined}
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-[#25a794] to-[#1d9e8c] px-4 py-3 flex items-center justify-between flex-shrink-0">
