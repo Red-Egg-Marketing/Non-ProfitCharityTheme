@@ -45,15 +45,7 @@ export function VolunteerCTA() {
               >
                 <a href="mailto:info@mhbhc.org">Volunteer with MHBHC</a>
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-[#25a794] px-8 rounded-full"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-                asChild
-              >
-                <a href="https://www.milehighbehavioralhealthcare.org/" target="_blank" rel="noopener noreferrer">Learn More</a>
-              </Button>
+              
             </div>
           </div>
 

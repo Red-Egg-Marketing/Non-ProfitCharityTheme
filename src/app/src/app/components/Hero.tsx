@@ -49,8 +49,8 @@ export function Hero({ onDonateClick }: HeroProps) {
 
               <Button
                 variant="outline"
-                className="border-[#457B9D] text-[#457B9D] hover:bg-[#457B9D] hover:text-white px-8 py-6 gap-2 rounded-full"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="border-[#457B9D] text-[#457B9D] hover:bg-[#457B9D] hover:text-white px-8 py-6 gap-2 rounded-full font-semibold"
+                style={{ fontFamily: "'Poppins', sans-serif" }}
                 asChild
               >
                 <a href="#programs">Our Programs</a>
