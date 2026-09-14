@@ -529,7 +529,7 @@ export function AIChat() {
                   placeholder="Your name"
                   autoComplete="name"
                   disabled={handoffLoading}
-                  className="w-full text-sm px-3 py-2 rounded-lg border border-[#25a794]/30 bg-white text-[#1D3557] placeholder:text-gray-400 focus:outline-none focus:border-[#25a794] transition-colors disabled:opacity-60"
+                  className="w-full text-base md:text-sm px-3 py-2 rounded-lg border border-[#25a794]/30 bg-white text-[#1D3557] placeholder:text-gray-400 focus:outline-none focus:border-[#25a794] transition-colors disabled:opacity-60"
                 />
                 <input
                   type="tel"
@@ -544,7 +544,7 @@ export function AIChat() {
                   autoComplete="tel"
                   inputMode="tel"
                   disabled={handoffLoading}
-                  className="w-full text-sm px-3 py-2 rounded-lg border border-[#25a794]/30 bg-white text-[#1D3557] placeholder:text-gray-400 focus:outline-none focus:border-[#25a794] transition-colors disabled:opacity-60"
+                  className="w-full text-base md:text-sm px-3 py-2 rounded-lg border border-[#25a794]/30 bg-white text-[#1D3557] placeholder:text-gray-400 focus:outline-none focus:border-[#25a794] transition-colors disabled:opacity-60"
                 />
               </div>
               {handoffError && (
@@ -589,7 +589,7 @@ export function AIChat() {
                     : "Ask about MHBHC programs…"
               }
               disabled={isLoading || chatEnded}
-              className="flex-1 text-sm px-3 py-2 rounded-full border border-gray-200 bg-gray-50 text-[#1D3557] placeholder:text-gray-400 focus:outline-none focus:border-[#25a794] focus:bg-white transition-colors disabled:opacity-60"
+              className="flex-1 text-base md:text-sm px-3 py-2 rounded-full border border-gray-200 bg-gray-50 text-[#1D3557] placeholder:text-gray-400 focus:outline-none focus:border-[#25a794] focus:bg-white transition-colors disabled:opacity-60"
               style={{ fontFamily: "'Inter', sans-serif" }}
             />
             <button
