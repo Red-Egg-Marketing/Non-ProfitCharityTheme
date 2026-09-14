@@ -22,6 +22,27 @@ const SESSION_KEY = "mhbhc_session_id";
 
 export function AIChat() {
   const [isOpen, setIsOpen] = useState(false);
+  // Mobile: size the panel to the *visual* viewport so the iOS keyboard shrinks
+  // the panel instead of pushing it offscreen, and lock the page behind it.
+  const [mobileHeight, setMobileHeight] = useState<number | null>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    if (!mq.matches) return;
+    const vv = window.visualViewport;
+    const update = () => setMobileHeight(vv ? vv.height : window.innerHeight);
+    update();
+    vv?.addEventListener("resize", update);
+    vv?.addEventListener("scroll", update);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      vv?.removeEventListener("resize", update);
+      vv?.removeEventListener("scroll", update);
+      document.body.style.overflow = prevOverflow;
+      setMobileHeight(null);
+    };
+  }, [isOpen]);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -329,7 +350,7 @@ export function AIChat() {
       <button
         onClick={() => setIsOpen((o) => !o)}
         aria-label="Open MHBHC chat assistant"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[#25a794] to-[#1d9e8c] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center"
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full ${isOpen ? "hidden md:flex" : "flex"} bg-gradient-to-br from-[#25a794] to-[#1d9e8c] text-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 items-center justify-center`}
       >
         {isOpen ? (
           <ChevronDown className="w-6 h-6" />
@@ -340,7 +361,10 @@ export function AIChat() {
 
       {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-h-[540px] flex flex-col rounded-2xl shadow-2xl border border-gray-100 overflow-hidden bg-white">
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-white overflow-hidden md:inset-auto md:bottom-24 md:right-6 md:w-[360px] md:h-auto md:max-h-[540px] md:rounded-2xl md:shadow-2xl md:border md:border-gray-100"
+          style={mobileHeight ? { height: mobileHeight } : undefined}
+        >
           {/* Header */}
           <div className="bg-gradient-to-r from-[#25a794] to-[#1d9e8c] px-4 py-3 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -388,7 +412,7 @@ export function AIChat() {
 
           {/* Messages */}
           <div
-            className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f8fcfb]"
+            className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3 bg-[#f8fcfb]"
             style={{ minHeight: 0 }}
           >
             {messages.map((msg, i) => (
